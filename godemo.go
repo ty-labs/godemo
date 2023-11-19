@@ -2,6 +2,7 @@ package godemo
 
 import (
 	"cmp"
+	"fmt"
 )
 
 type OrderableFn[T any] func(t1, t2 T) int
@@ -73,4 +74,97 @@ func (person Person) Compare(other Person) int {
 		return cmp.Compare[int](person.Age, other.Age)
 	}
 	return order
+}
+
+/*
+Chapter exercises:
+
+1) A generic function that will double any int/float
+2) A generic interface that requies underlying int/float64 & embeds fmt.Stringer
++ a concrete type that meets the interfaces
+3) A generic singly-linked LL data structure holding comparable values
+*/
+type Numeric interface {
+	int | int8 | uint8 | int16 | uint16 | int32 | uint32 |
+		int64 | uint64 | float32 | float64
+}
+
+func Double[T Numeric](n T) T {
+	return 2 * n
+}
+
+type PrintableIntFloat interface {
+	~int | ~float64
+	fmt.Stringer
+}
+
+type PrintableFloat float64
+
+func (pf PrintableFloat) String() string {
+	return fmt.Sprintf("%.2f", pf)
+}
+
+func PrintPrintable[T PrintableIntFloat](pif T) {
+	fmt.Println(pif)
+}
+
+type SinglyLinkedList[T comparable] struct {
+	Len  int
+	Root *singlyLinkedListNode[T]
+}
+type singlyLinkedListNode[T comparable] struct {
+	val  T
+	next *singlyLinkedListNode[T]
+}
+
+func (sll *SinglyLinkedList[T]) Add(val T) {
+	// recursive wrappers... this could be done iteratively as well
+	sll.Root = sll.Root.add(val)
+	sll.Len += 1
+}
+
+func (sll *SinglyLinkedList[T]) Insert(val T, i int) {
+	sll.Root = sll.Root.insert(val, i, 0)
+	sll.Len += 1
+}
+
+func (sll *SinglyLinkedList[T]) Index(val T) int {
+	return sll.Root.index(val, 0)
+}
+
+func (n *singlyLinkedListNode[T]) add(val T) *singlyLinkedListNode[T] {
+	if n == nil {
+		return &singlyLinkedListNode[T]{val: val}
+	}
+	n.next = n.next.add(val)
+	return n
+}
+
+func (n *singlyLinkedListNode[T]) insert(val T, i int, curr int) *singlyLinkedListNode[T] {
+	if n == nil {
+		return &singlyLinkedListNode[T]{val: val}
+	}
+	if i == curr {
+		newNode := singlyLinkedListNode[T]{val: val}
+		newNode.next = n
+		return &newNode
+	}
+	n.next = n.next.insert(val, i, curr+1)
+	return n
+}
+
+func (n *singlyLinkedListNode[T]) index(val T, curr int) int {
+	if n == nil {
+		return -1
+	}
+	if n.val == val {
+		return curr
+	}
+	return n.next.index(val, curr+1)
+}
+
+func NewSinglyLinkedList[T comparable]() *SinglyLinkedList[T] {
+	return &SinglyLinkedList[T]{
+		Len: 0,
+	}
 }
