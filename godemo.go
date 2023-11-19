@@ -1,5 +1,9 @@
 package godemo
 
+import (
+	"cmp"
+)
+
 type OrderableFn[T any] func(t1, t2 T) int
 
 type Tree[T any] struct {
@@ -55,4 +59,18 @@ func NewTree[T any](f OrderableFn[T]) *Tree[T] {
 	return &Tree[T]{
 		OrderFn: f,
 	}
+}
+
+type Person struct {
+	// structs w/ comparable underlying fields are also comparable (on value)
+	Name string
+	Age  int
+}
+
+func (person Person) Compare(other Person) int {
+	order := cmp.Compare[string](person.Name, other.Name)
+	if order == 0 {
+		return cmp.Compare[int](person.Age, other.Age)
+	}
+	return order
 }
