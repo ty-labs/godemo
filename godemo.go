@@ -1,3 +1,11 @@
+// Package provides a tree and singly linked list data structure.
+//
+// This code is a demonstration of Go generics and publishing, versioning, and
+// importing Go modules. Exercises from Chapter 8 & 10 of [Learning Go]. The exercises
+// involved several problems: Generic Tree + Concrete Orderable Type for Tree, Generic Singly
+// Linked List, Generic Numeric Type + Functions, Combining Interface Methods + Type Element.
+//
+// [Learning Go]: https://www.amazon.com/Learning-Go-Idiomatic-Real-World-Programming/dp/1492077216
 package godemo
 
 import (
@@ -5,8 +13,13 @@ import (
 	"fmt"
 )
 
+// OrderableFn allows two variables of the same (and any) type to be 'Orderable'
+// by following the style from [cmp] that if t1 < t2, 1 is returned if t1 > t2, and 0 is returned
+// if t1 == t2
 type OrderableFn[T any] func(t1, t2 T) int
 
+// The Generic Tree holds a 'Root' to point to the root node and an 'OrderFn' by
+// which the specified type is ordered in the tree.
 type Tree[T any] struct {
 	Root    *node[T]
 	OrderFn OrderableFn[T]
@@ -17,10 +30,12 @@ type node[T any] struct {
 	right *node[T]
 }
 
+// Insert inserts value 'val' into the Tree using the defined 'OrderableFn'.
 func (t *Tree[T]) Insert(val T) {
 	t.Root = t.Root.insert(val, t.OrderFn)
 }
 
+// Contains checks if a value 'val' is in the Tree
 func (t *Tree[T]) Contains(val T) bool {
 	return t.Root.contains(val, t.OrderFn)
 }
@@ -56,6 +71,8 @@ func (n *node[T]) contains(val T, f OrderableFn[T]) bool {
 	}
 }
 
+// NewTree initializes a new, empty tree for a specified type using an input
+// OrderableFn 'f'
 func NewTree[T any](f OrderableFn[T]) *Tree[T] {
 	return &Tree[T]{
 		OrderFn: f,
@@ -118,7 +135,6 @@ type singlyLinkedListNode[T comparable] struct {
 }
 
 func (sll *SinglyLinkedList[T]) Add(val T) {
-	// recursive wrappers... this could be done iteratively as well
 	sll.Root = sll.Root.add(val)
 	sll.Len += 1
 }
